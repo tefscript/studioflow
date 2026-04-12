@@ -2,25 +2,29 @@
 
 Sistema web para gestão de estúdios de beleza, desenvolvido como projeto de Trabalho de Conclusão de Curso em Engenharia de Software.
 
-## Sobre o projeto
+## Sobre o Projeto
 
-O StudioFlow é uma aplicação web voltada para profissionais da área da beleza, como lash designers, esteticistas e body piercers.
+O **StudioFlow** é uma aplicação web voltada para profissionais da área da beleza, como lash designers, esteticistas e body piercers.
 
-O sistema tem como objetivo centralizar a gestão do negócio, permitindo o controle de clientes, organização da agenda e automatização de confirmações de atendimentos, reduzindo a dependência de processos manuais e comunicação informal.
+A proposta do sistema é centralizar a gestão do negócio em uma única plataforma, permitindo o controle de clientes, a organização da agenda e a automatização de confirmações de atendimentos. Dessa forma, busca-se reduzir a dependência de processos manuais e de comunicações informais, tornando a rotina mais prática, organizada e eficiente.
 
-## Funcionalidades
+## Problema
 
-- Gestão de agenda de atendimentos  
-- Cadastro e controle de clientes  
-- Criação, edição e cancelamento de agendamentos  
-- Envio de confirmação de atendimentos via WhatsApp  
-- Consulta de histórico de clientes  
+Muitos profissionais da área da beleza ainda realizam o controle de agendamentos e clientes de forma manual, utilizando cadernos, mensagens em aplicativos e anotações dispersas. Esse tipo de organização pode gerar falhas, esquecimentos, perda de informações e dificuldades no acompanhamento do histórico de atendimentos, comprometendo a produtividade e a qualidade do serviço prestado.
 
 ## Objetivo
 
-Oferecer uma solução simples e eficiente para a organização de pequenos estúdios de beleza, contribuindo para a melhoria da produtividade e da experiência no atendimento ao cliente.
+Oferecer uma solução simples e eficiente para a organização de pequenos estúdios de beleza, contribuindo para a melhoria da produtividade, da gestão dos atendimentos e da experiência oferecida ao cliente.
 
-## Público-alvo
+## Funcionalidades
+
+- Gestão da agenda de atendimentos  
+- Cadastro e controle de clientes  
+- Criação, edição e cancelamento de agendamentos  
+- Envio de confirmações de atendimento via WhatsApp  
+- Consulta ao histórico de clientes  
+
+## Público-Alvo
 
 - Profissionais autônomos da área da beleza  
 - Lash designers  
@@ -29,13 +33,13 @@ Oferecer uma solução simples e eficiente para a organização de pequenos est�
 
 ## Tecnologias
 
-As tecnologias do projeto serão definidas ao longo do desenvolvimento.
+As tecnologias que serão utilizadas no projeto ainda serão definidas ao longo do desenvolvimento, de acordo com os requisitos levantados e as necessidades identificadas durante a construção da solução.
 
-## Status do projeto
+## Status do Projeto
 
-Em fase inicial de planejamento e definição de requisitos.
+O projeto encontra-se em fase inicial de planejamento e definição de requisitos.
 
 ## Autora
 
-Stefani Paula Sant’ana Cruz  
+**Stefani Paula Sant’ana Cruz**  
 Engenharia de Software – Católica SC
