@@ -11,10 +11,19 @@ O sistema tem como objetivo centralizar a gestão do negócio, permitindo o cont
 ## Funcionalidades
 
 - Gestão de agenda de atendimentos  
+Permite visualizar e organizar compromissos de forma simples, evitando conflitos de horários.
+
 - Cadastro e controle de clientes  
+Centraliza informações dos clientes, facilitando o acompanhamento e personalização do atendimento.
+
 - Criação, edição e cancelamento de agendamentos  
+Garante flexibilidade na gestão da agenda, permitindo ajustes rápidos conforme a rotina do profissional.
+
 - Envio de confirmação de atendimentos via WhatsApp  
+Reduz faltas e esquecimentos, automatizando a comunicação com os clientes.
+
 - Consulta de histórico de clientes  
+Possibilita acompanhar atendimentos anteriores, melhorando a qualidade do serviço prestado. 
 
 ## Objetivo
 
