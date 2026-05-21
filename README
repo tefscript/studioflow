@@ -1,41 +1,90 @@
 # StudioFlow
 
-Sistema web para gestão de estúdios de beleza, desenvolvido como projeto de Trabalho de Conclusão de Curso em Engenharia de Software.
+Sistema web de gestão para estúdios de beleza, desenvolvido como Trabalho de Conclusão de Curso (TCC) em Engenharia de Software.
 
 ## Sobre o projeto
 
-O StudioFlow é uma aplicação web voltada para profissionais da área da beleza, como lash designers, esteticistas e body piercers.
+O StudioFlow é uma plataforma desenvolvida para profissionais autônomos da área da beleza, como lash designers, esteticistas e body piercers.
 
-O sistema tem como objetivo centralizar a gestão do negócio, permitindo o controle de clientes, organização da agenda e automatização de confirmações de atendimentos, reduzindo a dependência de processos manuais e comunicação informal.
+O sistema busca centralizar a gestão do estúdio em uma única aplicação, facilitando o gerenciamento de clientes, agenda e atendimentos, além de automatizar processos do dia a dia, como confirmações via WhatsApp.
+
+O projeto foi idealizado com foco em pequenos negócios que atualmente realizam sua organização de forma manual, utilizando anotações, planilhas ou aplicativos de mensagens.
+
+---
 
 ## Funcionalidades
 
-- Gestão de agenda de atendimentos  
-- Cadastro e controle de clientes  
-- Criação, edição e cancelamento de agendamentos  
-- Envio de confirmação de atendimentos via WhatsApp  
-- Consulta de histórico de clientes  
+* Gestão de agenda de atendimentos
+* Cadastro e gerenciamento de clientes
+* Criação, edição e cancelamento de agendamentos
+* Visualização de agenda diária
+* Histórico de atendimentos
+* Integração com WhatsApp para confirmação automática
+* Sistema de autenticação de usuários
 
-## Objetivo
-
-Oferecer uma solução simples e eficiente para a organização de pequenos estúdios de beleza, contribuindo para a melhoria da produtividade e da experiência no atendimento ao cliente.
-
-## Público-alvo
-
-- Profissionais autônomos da área da beleza  
-- Lash designers  
-- Esteticistas  
-- Profissionais que realizam piercings  
+---
 
 ## Tecnologias
 
-As tecnologias do projeto serão definidas ao longo do desenvolvimento.
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* TailwindCSS
+
+### Backend
+
+* Node.js
+* Express
+* Prisma ORM
+* PostgreSQL
+
+---
+
+## Arquitetura
+
+O projeto segue arquitetura separada entre frontend e backend:
+
+```bash
+studioflow/
+├── frontend/
+└── backend/
+```
+
+---
+
+## Objetivo
+
+O objetivo do StudioFlow é oferecer uma solução moderna, intuitiva e acessível para pequenos estúdios de beleza, contribuindo para:
+
+* organização da rotina
+* redução de falhas em agendamentos
+* melhoria da produtividade
+* automatização da comunicação com clientes
+
+---
 
 ## Status do projeto
 
-Em fase inicial de planejamento e definição de requisitos.
+🚧 Em desenvolvimento
 
-## Autora
+Atualmente o projeto possui:
 
-Stefani Paula Sant’ana Cruz  
-Engenharia de Software – Católica SC
+* estrutura inicial do frontend
+* interface SaaS moderna
+* arquitetura base definida
+* planejamento do backend e integração com banco de dados
+
+---
+
+## Autor
+
+Stefani Paula Sant’ana Cruz
+Engenharia de Software — Católica SC
+
+---
+
+## Repositório
+
+https://github.com/tefscript/studioflow
