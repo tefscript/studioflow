@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  studioName String   @default("Meu Estúdio") @map("studio_name")
+  whatsapp   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  appointments Appointment[]
+  clients      Client[]
+  services     Service[]
+  settings     Settings?
+
+  @@map("users")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  phone     String
+  email     String?
+  notes     String?
+  visits    Int      @default(0)
+  lastVisit String?  @map("last_visit")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@map("clients")
+}
+
+model Service {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  duration  Int
+  price     Decimal  @db.Decimal(10, 2)
+  category  String   @default("Outros")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+model Appointment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  clientId  String   @map("client_id")
+  serviceId String   @map("service_id")
+  date      String
+  time      String
+  duration  Int
+  status    String   @default("aguardando")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model Settings {
+  id               String  @id @default(uuid())
+  userId           String  @unique @map("user_id")
+  notifyNew        Boolean @default(true) @map("notify_new")
+  notifyCancel     Boolean @default(true) @map("notify_cancel")
+  notifyConfirm    Boolean @default(true) @map("notify_confirm")
+  notifyDailyEmail Boolean @default(false) @map("notify_daily_email")
+  notifyWeekly     Boolean @default(false) @map("notify_weekly")
+  waConfirm24h     Boolean @default(true) @map("wa_confirm_24h")
+  waReminder2h     Boolean @default(true) @map("wa_reminder_2h")
+  waThanks         Boolean @default(false) @map("wa_thanks")
+  prefDarkAuto     Boolean @default(false) @map("pref_dark_auto")
+  prefShowValues   Boolean @default(true) @map("pref_show_values")
+  prefBlockLunch   Boolean @default(false) @map("pref_block_lunch")
+  prefAllowSunday  Boolean @default(false) @map("pref_allow_sunday")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
+}

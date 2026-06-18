@@ -104,14 +104,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 z-30 flex w-full items-center justify-around border-t border-border bg-card/95 py-2 backdrop-blur-md lg:hidden">
         {nav.slice(0, 5).map(({ to, label, icon: Icon }) => {
-          const active = location.pathname === to || (to === "/dashboard" && location.pathname === "/");
+          const active =
+            location.pathname === to || (to === "/dashboard" && location.pathname === "/");
           return (
             <Link
               key={to}
               to={to}
               className={cn(
                 "flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-[10px] font-medium transition-colors",
-                active ? "text-brand-600" : "text-brand-900/50"
+                active ? "text-brand-600" : "text-brand-900/50",
               )}
             >
               <Icon className="size-5" />
@@ -137,7 +138,8 @@ function SidebarContent() {
 
       <nav className="space-y-1">
         {nav.map(({ to, label, icon: Icon }) => {
-          const active = location.pathname === to || (to === "/dashboard" && location.pathname === "/");
+          const active =
+            location.pathname === to || (to === "/dashboard" && location.pathname === "/");
           return (
             <Link
               key={to}
@@ -146,7 +148,7 @@ function SidebarContent() {
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
                   ? "bg-brand-100 text-brand-600"
-                  : "text-brand-900/60 hover:bg-brand-50 hover:text-brand-900"
+                  : "text-brand-900/60 hover:bg-brand-50 hover:text-brand-900",
               )}
             >
               <Icon className="size-4" />
@@ -157,18 +159,6 @@ function SidebarContent() {
       </nav>
 
       <div className="mt-auto space-y-6">
-        <div className="rounded-2xl border border-brand-200 bg-brand-50 p-4">
-          <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-600">
-            <Sparkles className="size-3" /> Plano Premium
-          </p>
-          <p className="mb-3 text-xs leading-relaxed text-brand-900/70">
-            Você atingiu 80% do seu limite de agendamentos.
-          </p>
-          <button className="w-full rounded-lg border border-brand-200 bg-white py-2 text-xs font-semibold shadow-sm transition-colors hover:bg-brand-100">
-            Fazer upgrade
-          </button>
-        </div>
-
         <div className="flex items-center gap-3 px-2">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-200 font-serif text-sm font-semibold text-brand-700 ring-1 ring-black/5">
             MS
@@ -207,13 +197,15 @@ export function PrimaryButton({
   children,
   icon: Icon = Plus,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { icon?: React.ComponentType<{ className?: string }> }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  icon?: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <button
       {...props}
       className={cn(
         "inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 transition-all hover:bg-brand-500 active:scale-[0.98]",
-        props.className
+        props.className,
       )}
     >
       {Icon && <Icon className="size-4" />}
@@ -231,7 +223,7 @@ export function SecondaryButton({
       {...props}
       className={cn(
         "inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold text-brand-900 transition-all hover:border-brand-300 hover:shadow-sm",
-        props.className
+        props.className,
       )}
     >
       {children}
