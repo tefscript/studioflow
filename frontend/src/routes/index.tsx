@@ -69,15 +69,12 @@ function LoginPage() {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-brand-900/60">
                   Senha
                 </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    toast("Link de redefinição enviado!", { description: "Verifique seu e-mail." })
-                  }
+                <Link
+                  to="/forgot-password"
                   className="text-xs font-semibold text-brand-600 hover:underline"
                 >
                   Esqueci minha senha
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-brand-900/40" />

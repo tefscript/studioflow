@@ -141,6 +141,12 @@ export const authApi = {
   logout: () => req<{ message: string }>("POST", "/auth/logout"),
 
   me: () => req<User>("GET", "/auth/me"),
+
+  forgotPassword: (email: string) =>
+    req<{ message: string }>("POST", "/auth/forgot-password", { email }),
+
+  resetPassword: (token: string, password: string) =>
+    req<{ message: string }>("POST", "/auth/reset-password", { token, password }),
 };
 
 // ---------------------------------------------------------------------------
