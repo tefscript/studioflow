@@ -150,6 +150,7 @@ router.post("/", async (req: AuthRequest, res: Response): Promise<void> => {
 
   // Enviar confirmação via WhatsApp (não bloqueia a resposta)
   sendWhatsAppConfirmation({
+    userId: req.userId!,
     clientName: client.name,
     clientPhone: client.phone,
     serviceName: service.name,

@@ -91,10 +91,13 @@ model Settings {
   waConfirm24h     Boolean @default(true) @map("wa_confirm_24h")
   waReminder2h     Boolean @default(true) @map("wa_reminder_2h")
   waThanks         Boolean @default(false) @map("wa_thanks")
-  prefDarkAuto     Boolean @default(false) @map("pref_dark_auto")
-  prefShowValues   Boolean @default(true) @map("pref_show_values")
-  prefBlockLunch   Boolean @default(false) @map("pref_block_lunch")
-  prefAllowSunday  Boolean @default(false) @map("pref_allow_sunday")
+  prefDarkAuto      Boolean @default(false) @map("pref_dark_auto")
+  prefShowValues    Boolean @default(true) @map("pref_show_values")
+  prefBlockLunch    Boolean @default(false) @map("pref_block_lunch")
+  prefAllowSunday   Boolean @default(false) @map("pref_allow_sunday")
+  evolutionUrl      String? @map("evolution_url")
+  evolutionKey      String? @map("evolution_key")
+  evolutionInstance String? @map("evolution_instance")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

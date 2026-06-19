@@ -1,19 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PageHeader, PrimaryButton } from "@/components/AppShell";
-import { clients as initialClients, type Client } from "@/lib/mock-data";
+import { clientsApi } from "@/lib/api";
+import type { Client } from "@/lib/api";
 import { Search, Phone, Mail, X, Loader2, MessageCircle, Filter } from "lucide-react";
 import { toast } from "sonner";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/_app/clientes")({
   component: ClientesPage,
 });
 
 function ClientesPage() {
-  const [list, setList] = useState(initialClients);
+  const [list, setList] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Client | null>(null);
+
+  useEffect(() => {
+    clientsApi
+      .list()
+      .then(setList)
+      .catch(() => toast.error("Erro ao carregar clientes"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(
     () =>
@@ -21,9 +32,9 @@ function ClientesPage() {
         (c) =>
           c.name.toLowerCase().includes(q.toLowerCase()) ||
           c.phone.includes(q) ||
-          c.email?.toLowerCase().includes(q.toLowerCase())
+          c.email?.toLowerCase().includes(q.toLowerCase()),
       ),
-    [list, q]
+    [list, q],
   );
 
   return (
@@ -49,7 +60,11 @@ function ClientesPage() {
         </button>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-brand-900/40">
+          <Loader2 className="size-6 animate-spin" />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center">
           <p className="font-serif text-lg">Nenhuma cliente encontrada</p>
           <p className="mt-1 text-sm text-brand-900/50">Tente outro termo de busca.</p>
@@ -79,7 +94,11 @@ function ClientesPage() {
                       className="flex items-center gap-3 text-left"
                     >
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 font-serif text-sm font-semibold text-brand-600">
-                        {c.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                        {c.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join("")}
                       </div>
                       <div>
                         <p className="font-semibold">{c.name}</p>
@@ -87,7 +106,9 @@ function ClientesPage() {
                       </div>
                     </button>
                   </td>
-                  <td className="hidden px-6 py-4 text-sm text-brand-900/70 md:table-cell">{c.phone}</td>
+                  <td className="hidden px-6 py-4 text-sm text-brand-900/70 md:table-cell">
+                    {c.phone}
+                  </td>
                   <td className="hidden max-w-xs px-6 py-4 lg:table-cell">
                     <p className="truncate text-sm text-brand-900/60">{c.notes || "—"}</p>
                   </td>
@@ -97,12 +118,14 @@ function ClientesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => toast.success("Mensagem enviada via WhatsApp!")}
-                      className="rounded-lg p-2 text-brand-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-brand-100"
+                    <a
+                      href={buildWhatsAppLink(c.phone, `Oi, ${c.name.split(" ")[0]}! 💕`)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg p-2 text-brand-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-brand-100 inline-flex"
                     >
                       <MessageCircle className="size-4" />
-                    </button>
+                    </a>
                   </td>
                 </tr>
               ))}
@@ -122,7 +145,16 @@ function ClientesPage() {
         />
       )}
 
-      {selected && <ClientDetail client={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ClientDetail
+          client={selected}
+          onClose={() => setSelected(null)}
+          onDelete={(id) => {
+            setList((prev) => prev.filter((c) => c.id !== id));
+            setSelected(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -134,25 +166,26 @@ function ClientModal({ onClose, onSave }: { onClose: () => void; onSave: (c: Cli
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) {
       toast.error("Nome e telefone são obrigatórios");
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      onSave({
-        id: Math.random().toString(36).slice(2),
+    try {
+      const client = await clientsApi.create({
         name,
         phone,
         email: email || undefined,
         notes: notes || undefined,
-        visits: 0,
-        lastVisit: new Date().toISOString().slice(0, 10),
       });
+      onSave(client);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao cadastrar cliente");
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
@@ -165,9 +198,20 @@ function ClientModal({ onClose, onSave }: { onClose: () => void; onSave: (c: Cli
           </button>
         </div>
         <form onSubmit={submit} className="space-y-4">
-          <Input label="Nome completo" value={name} onChange={setName} placeholder="Ex: Isabel Rocha" />
+          <Input
+            label="Nome completo"
+            value={name}
+            onChange={setName}
+            placeholder="Ex: Isabel Rocha"
+          />
           <Input label="Telefone" value={phone} onChange={setPhone} placeholder="(11) 99999-9999" />
-          <Input label="E-mail (opcional)" value={email} onChange={setEmail} type="email" placeholder="email@exemplo.com" />
+          <Input
+            label="E-mail (opcional)"
+            value={email}
+            onChange={setEmail}
+            type="email"
+            placeholder="email@exemplo.com"
+          />
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-brand-900/60">
               Observações
@@ -203,14 +247,42 @@ function ClientModal({ onClose, onSave }: { onClose: () => void; onSave: (c: Cli
   );
 }
 
-function ClientDetail({ client, onClose }: { client: Client; onClose: () => void }) {
+function ClientDetail({
+  client,
+  onClose,
+  onDelete,
+}: {
+  client: Client;
+  onClose: () => void;
+  onDelete: (id: string) => void;
+}) {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm(`Remover ${client.name}?`)) return;
+    setDeleting(true);
+    try {
+      await clientsApi.delete(client.id);
+      toast.success("Cliente removida");
+      onDelete(client.id);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao remover");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-brand-900/40 backdrop-blur-sm md:items-center md:p-4">
       <div className="w-full max-w-md animate-float-in rounded-t-3xl bg-card p-8 shadow-2xl md:rounded-3xl">
         <div className="mb-6 flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex size-14 items-center justify-center rounded-full bg-brand-100 font-serif text-xl font-semibold text-brand-600">
-              {client.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+              {client.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")}
             </div>
             <div>
               <h2 className="font-serif text-xl font-semibold">{client.name}</h2>
@@ -235,18 +307,31 @@ function ClientDetail({ client, onClose }: { client: Client; onClose: () => void
           )}
           {client.notes && (
             <div className="rounded-xl bg-brand-50 p-4">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-900/60">Observações</p>
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-brand-900/60">
+                Observações
+              </p>
               <p className="text-sm leading-relaxed">{client.notes}</p>
             </div>
           )}
         </div>
 
-        <button
-          onClick={() => toast.success("Mensagem enviada via WhatsApp!")}
-          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500"
-        >
-          <MessageCircle className="size-4" /> Enviar WhatsApp
-        </button>
+        <div className="mt-6 flex gap-3">
+          <a
+            href={buildWhatsAppLink(client.phone, `Oi, ${client.name.split(" ")[0]}! 💕`)}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500"
+          >
+            <MessageCircle className="size-4" /> Enviar WhatsApp
+          </a>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 text-sm font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-70"
+          >
+            {deleting ? <Loader2 className="size-4 animate-spin" /> : "Remover"}
+          </button>
+        </div>
       </div>
     </div>
   );

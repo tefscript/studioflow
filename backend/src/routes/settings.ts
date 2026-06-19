@@ -19,6 +19,9 @@ const settingsSchema = z.object({
   pref_show_values: z.boolean().optional(),
   pref_block_lunch: z.boolean().optional(),
   pref_allow_sunday: z.boolean().optional(),
+  evolution_url: z.string().nullable().optional(),
+  evolution_key: z.string().nullable().optional(),
+  evolution_instance: z.string().nullable().optional(),
 });
 
 async function getOrCreateSettings(userId: string) {
@@ -34,6 +37,7 @@ function formatSettings(s: {
   notifyDailyEmail: boolean; notifyWeekly: boolean; waConfirm24h: boolean;
   waReminder2h: boolean; waThanks: boolean; prefDarkAuto: boolean;
   prefShowValues: boolean; prefBlockLunch: boolean; prefAllowSunday: boolean;
+  evolutionUrl?: string | null; evolutionKey?: string | null; evolutionInstance?: string | null;
 }) {
   return {
     notify_new: s.notifyNew,
@@ -48,6 +52,9 @@ function formatSettings(s: {
     pref_show_values: s.prefShowValues,
     pref_block_lunch: s.prefBlockLunch,
     pref_allow_sunday: s.prefAllowSunday,
+    evolution_url: s.evolutionUrl ?? null,
+    evolution_key: s.evolutionKey ?? null,
+    evolution_instance: s.evolutionInstance ?? null,
   };
 }
 
@@ -87,6 +94,9 @@ function mapToPrismaFields(d: z.infer<typeof settingsSchema>) {
     ...(d.pref_show_values !== undefined ? { prefShowValues: d.pref_show_values } : {}),
     ...(d.pref_block_lunch !== undefined ? { prefBlockLunch: d.pref_block_lunch } : {}),
     ...(d.pref_allow_sunday !== undefined ? { prefAllowSunday: d.pref_allow_sunday } : {}),
+    ...(d.evolution_url !== undefined ? { evolutionUrl: d.evolution_url } : {}),
+    ...(d.evolution_key !== undefined ? { evolutionKey: d.evolution_key } : {}),
+    ...(d.evolution_instance !== undefined ? { evolutionInstance: d.evolution_instance } : {}),
   };
 }
 

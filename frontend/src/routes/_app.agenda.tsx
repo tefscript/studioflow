@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader, PrimaryButton } from "@/components/AppShell";
-import { appointments, clients, services, statusLabels, statusStyles, type Appointment } from "@/lib/mock-data";
-import { buildConfirmationMessage, buildWhatsAppLink, getClientPhone } from "@/lib/whatsapp";
+import { statusLabels, statusStyles } from "@/lib/mock-data";
+import { appointmentsApi, clientsApi, servicesApi } from "@/lib/api";
+import type { Appointment, Client, Service } from "@/lib/api";
+import { buildConfirmationMessage, buildWhatsAppLink } from "@/lib/whatsapp";
 import { ChevronLeft, ChevronRight, Copy, Loader2, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,19 +16,30 @@ const hours = Array.from({ length: 11 }, (_, i) => `${String(8 + i).padStart(2, 
 
 function AgendaPage() {
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(appointments);
+  const [items, setItems] = useState<Appointment[]>([]);
   const [dayOffset, setDayOffset] = useState(0);
   const [waApt, setWaApt] = useState<Appointment | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const date = new Date(Date.now() + dayOffset * 86400000);
   const dateISO = date.toISOString().slice(0, 10);
-  const dayApts = items.filter((a) => a.date === dateISO);
 
   const dateLabel = date.toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
     month: "long",
   });
+
+  useEffect(() => {
+    setLoading(true);
+    appointmentsApi
+      .list({ date: dateISO })
+      .then(setItems)
+      .catch(() => toast.error("Erro ao carregar agendamentos"))
+      .finally(() => setLoading(false));
+  }, [dateISO]);
+
+  const dayApts = items;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -64,55 +77,84 @@ function AgendaPage() {
       </div>
 
       <div className="rounded-3xl border border-border bg-card p-2 shadow-sm md:p-4">
-        {hours.map((h) => {
-          const apt = dayApts.find((a) => a.time.startsWith(h.slice(0, 2)));
-          return (
-            <div key={h} className="flex gap-4 border-b border-border/60 last:border-b-0">
-              <div className="w-16 shrink-0 py-4 text-right">
-                <span className="text-xs font-semibold text-brand-900/40">{h}</span>
-              </div>
-              <div className="flex-1 py-2">
-                {apt ? (
-                  <div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4 text-left transition-all hover:border-brand-500 hover:shadow-md">
-                    <button
-                      onClick={() => toast.info(`${apt.clientName} — ${apt.service}`)}
-                      className="flex flex-1 items-center gap-3 text-left"
-                    >
-                      <div className="flex size-10 items-center justify-center rounded-full bg-brand-200 font-serif text-sm font-semibold text-brand-700">
-                        {apt.clientInitials}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{apt.clientName}</p>
-                        <p className="text-xs text-brand-900/50">
-                          {apt.service} • {apt.duration} min
-                        </p>
-                      </div>
-                    </button>
-                    <div className="flex items-center gap-2">
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-brand-900/40">
+            <Loader2 className="size-6 animate-spin" />
+          </div>
+        ) : (
+          hours.map((h) => {
+            const apt = dayApts.find((a) => a.time.startsWith(h.slice(0, 2)));
+            return (
+              <div key={h} className="flex gap-4 border-b border-border/60 last:border-b-0">
+                <div className="w-16 shrink-0 py-4 text-right">
+                  <span className="text-xs font-semibold text-brand-900/40">{h}</span>
+                </div>
+                <div className="flex-1 py-2">
+                  {apt ? (
+                    <div className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4 text-left transition-all hover:border-brand-500 hover:shadow-md">
                       <button
-                        onClick={() => setWaApt(apt)}
-                        title="Confirmar via WhatsApp"
-                        className="flex size-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200"
+                        onClick={() => toast.info(`${apt.client_name} — ${apt.service_name}`)}
+                        className="flex flex-1 items-center gap-3 text-left"
                       >
-                        <MessageCircle className="size-4" />
+                        <div className="flex size-10 items-center justify-center rounded-full bg-brand-200 font-serif text-sm font-semibold text-brand-700">
+                          {apt.clientInitials}
+                        </div>
+                        <div>
+                          <p className="font-semibold">{apt.client_name}</p>
+                          <p className="text-xs text-brand-900/50">
+                            {apt.service_name} • {apt.duration} min
+                          </p>
+                        </div>
                       </button>
-                      <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase ${statusStyles[apt.status]}`}>
-                        {statusLabels[apt.status]}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setWaApt(apt)}
+                          title="Confirmar via WhatsApp"
+                          className="flex size-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 transition hover:bg-emerald-200"
+                        >
+                          <MessageCircle className="size-4" />
+                        </button>
+                        <select
+                          value={apt.status}
+                          onChange={async (e) => {
+                            try {
+                              const updated = await appointmentsApi.setStatus(
+                                apt.id,
+                                e.target.value as Appointment["status"],
+                              );
+                              setItems((prev) =>
+                                prev.map((a) => (a.id === updated.id ? updated : a)),
+                              );
+                              toast.success("Status atualizado!");
+                            } catch {
+                              toast.error("Erro ao atualizar status");
+                            }
+                          }}
+                          className={`rounded-full border-0 px-3 py-1 text-[10px] font-bold uppercase cursor-pointer ${statusStyles[apt.status]}`}
+                        >
+                          {(["confirmado", "aguardando", "concluido", "cancelado"] as const).map(
+                            (s) => (
+                              <option key={s} value={s}>
+                                {statusLabels[s]}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setOpen(true)}
-                    className="flex h-14 w-full items-center justify-center rounded-2xl border border-dashed border-transparent text-xs text-brand-900/30 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
-                  >
-                    + Adicionar atendimento às {h}
-                  </button>
-                )}
+                  ) : (
+                    <button
+                      onClick={() => setOpen(true)}
+                      className="flex h-14 w-full items-center justify-center rounded-2xl border border-dashed border-transparent text-xs text-brand-900/30 transition-all hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
+                    >
+                      + Adicionar atendimento às {h}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {open && (
@@ -121,7 +163,9 @@ function AgendaPage() {
           onSave={(apt) => {
             setItems((prev) => [...prev, apt]);
             setOpen(false);
-            toast.success("Agendamento criado!", { description: `${apt.clientName} às ${apt.time}` });
+            toast.success("Agendamento criado!", {
+              description: `${apt.client_name} às ${apt.time}`,
+            });
           }}
           defaultDate={dateISO}
         />
@@ -149,7 +193,21 @@ function NewAppointmentModal({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const submit = (e: React.FormEvent) => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+
+  useEffect(() => {
+    clientsApi
+      .list()
+      .then(setClients)
+      .catch(() => toast.error("Erro ao carregar clientes"));
+    servicesApi
+      .list()
+      .then(setServices)
+      .catch(() => toast.error("Erro ao carregar serviços"));
+  }, []);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = {};
     if (!clientId) errs.client = "Selecione uma cliente";
@@ -160,22 +218,20 @@ function NewAppointmentModal({
     if (Object.keys(errs).length) return;
 
     setLoading(true);
-    setTimeout(() => {
-      const client = clients.find((c) => c.id === clientId)!;
-      const service = services.find((s) => s.id === serviceId)!;
-      onSave({
-        id: Math.random().toString(36).slice(2),
-        clientName: client.name,
-        clientInitials: client.name.split(" ").map((n) => n[0]).slice(0, 2).join(""),
-        service: service.name,
-        time,
-        duration: service.duration,
+    try {
+      const apt = await appointmentsApi.create({
+        client_id: clientId,
+        service_id: serviceId,
         date,
-        status: "aguardando",
+        time,
         notes,
       });
+      onSave(apt);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar agendamento");
+    } finally {
       setLoading(false);
-    }, 700);
+    }
   };
 
   return (
@@ -200,7 +256,9 @@ function NewAppointmentModal({
             >
               <option value="">Selecione uma cliente</option>
               {clients.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </Field>
@@ -272,7 +330,15 @@ function NewAppointmentModal({
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-brand-900/60">
@@ -285,8 +351,20 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function WhatsAppModal({ apt, onClose }: { apt: Appointment; onClose: () => void }) {
-  const phone = getClientPhone(apt);
-  const [message, setMessage] = useState(() => buildConfirmationMessage(apt));
+  const phone = apt.client_phone;
+  const [message, setMessage] = useState(() =>
+    buildConfirmationMessage({
+      id: apt.id,
+      clientName: apt.client_name,
+      clientInitials: apt.clientInitials,
+      service: apt.service_name,
+      time: apt.time,
+      duration: apt.duration,
+      date: apt.date,
+      status: apt.status,
+      notes: apt.notes,
+    }),
+  );
   const link = buildWhatsAppLink(phone, message);
 
   const copy = async () => {
@@ -309,7 +387,7 @@ function WhatsAppModal({ apt, onClose }: { apt: Appointment; onClose: () => void
             <div>
               <h2 className="font-serif text-2xl font-semibold">Confirmar via WhatsApp</h2>
               <p className="text-sm text-brand-900/50">
-                {apt.clientName} {phone ? `• ${phone}` : "• telefone não cadastrado"}
+                {apt.client_name} {phone ? `• ${phone}` : "• telefone não cadastrado"}
               </p>
             </div>
           </div>
@@ -344,7 +422,8 @@ function WhatsAppModal({ apt, onClose }: { apt: Appointment; onClose: () => void
             target="_blank"
             rel="noreferrer"
             onClick={() => {
-              if (!phone) toast.warning("Telefone não cadastrado — abrindo WhatsApp sem destinatário.");
+              if (!phone)
+                toast.warning("Telefone não cadastrado — abrindo WhatsApp sem destinatário.");
             }}
             className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500"
           >

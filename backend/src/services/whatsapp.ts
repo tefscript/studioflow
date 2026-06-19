@@ -1,15 +1,25 @@
+import prisma from "../lib/prisma";
+
 interface ConfirmationPayload {
   clientName: string;
   clientPhone: string;
   serviceName: string;
   date: string;
   time: string;
+  userId: string;
+}
+
+interface ReminderPayload {
+  clientName: string;
+  clientPhone: string;
+  serviceName: string;
+  date: string;
+  time: string;
+  userId: string;
 }
 
 function formatPhone(phone: string): string {
-  // Remove tudo que não é dígito
   const digits = phone.replace(/\D/g, "");
-  // Garante código do país 55 (Brasil)
   return digits.startsWith("55") ? digits : `55${digits}`;
 }
 
@@ -18,44 +28,57 @@ function formatDate(dateStr: string): string {
   return `${day}/${month}/${year}`;
 }
 
-function buildMessage(payload: ConfirmationPayload): string {
-  return (
+async function getConfig(userId: string) {
+  const settings = await prisma.settings.findUnique({ where: { userId } });
+  return {
+    url: settings?.evolutionUrl || process.env.EVOLUTION_API_URL || "",
+    key: settings?.evolutionKey || process.env.EVOLUTION_API_KEY || "",
+    instance: settings?.evolutionInstance || process.env.EVOLUTION_INSTANCE || "",
+  };
+}
+
+async function sendMessage(userId: string, phone: string, text: string): Promise<void> {
+  const config = await getConfig(userId);
+  if (!config.url || !config.key || !config.instance || !phone) return;
+
+  const formatted = formatPhone(phone);
+  if (formatted.length < 12) return;
+
+  const response = await fetch(`${config.url}/message/sendText/${config.instance}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: config.key,
+    },
+    body: JSON.stringify({ number: formatted, text }),
+  });
+
+  if (!response.ok) {
+    const txt = await response.text();
+    throw new Error(`EvolutionAPI error ${response.status}: ${txt}`);
+  }
+}
+
+export async function sendWhatsAppConfirmation(payload: ConfirmationPayload): Promise<void> {
+  const text =
     `Olá, ${payload.clientName}! 👋\n\n` +
     `Seu agendamento foi confirmado! ✅\n\n` +
     `📋 *Serviço:* ${payload.serviceName}\n` +
     `📅 *Data:* ${formatDate(payload.date)}\n` +
     `🕐 *Horário:* ${payload.time}\n\n` +
-    `Qualquer dúvida, é só chamar! 💖`
-  );
+    `Qualquer dúvida, é só chamar! 💖`;
+
+  await sendMessage(payload.userId, payload.clientPhone, text);
 }
 
-export async function sendWhatsAppConfirmation(payload: ConfirmationPayload): Promise<void> {
-  const apiUrl = process.env.EVOLUTION_API_URL;
-  const apiKey = process.env.EVOLUTION_API_KEY;
-  const instance = process.env.EVOLUTION_INSTANCE;
+export async function sendWhatsAppReminder(payload: ReminderPayload): Promise<void> {
+  const text =
+    `Olá, ${payload.clientName}! ⏰\n\n` +
+    `Lembrando do seu agendamento *hoje*!\n\n` +
+    `📋 *Serviço:* ${payload.serviceName}\n` +
+    `📅 *Data:* ${formatDate(payload.date)}\n` +
+    `🕐 *Horário:* ${payload.time}\n\n` +
+    `Te esperamos! 💖`;
 
-  // RN04: Não enviar se número inválido ou API não configurada
-  if (!apiUrl || !apiKey || !instance || !payload.clientPhone) return;
-
-  const phone = formatPhone(payload.clientPhone);
-  if (phone.length < 12) return;
-
-  const body = {
-    number: phone,
-    text: buildMessage(payload),
-  };
-
-  const response = await fetch(`${apiUrl}/message/sendText/${instance}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: apiKey,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`EvolutionAPI error ${response.status}: ${text}`);
-  }
+  await sendMessage(payload.userId, payload.clientPhone, text);
 }

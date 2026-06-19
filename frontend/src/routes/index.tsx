@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mail, Lock, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { authApi, setToken } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   component: LoginPage,
@@ -13,17 +14,23 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Preencha e-mail e senha");
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      toast.success("Bem-vinda de volta, Isabel ✨");
+    try {
+      const { token, user } = await authApi.login(email, password);
+      setToken(token);
+      toast.success(`Bem-vinda de volta, ${user.name.split(" ")[0]} ✨`);
       navigate({ to: "/dashboard" });
-    }, 900);
+    } catch (err: any) {
+      toast.error(err.message ?? "Erro ao entrar");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,7 +71,9 @@ function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => toast("Link de redefinição enviado!", { description: "Verifique seu e-mail." })}
+                  onClick={() =>
+                    toast("Link de redefinição enviado!", { description: "Verifique seu e-mail." })
+                  }
                   className="text-xs font-semibold text-brand-600 hover:underline"
                 >
                   Esqueci minha senha

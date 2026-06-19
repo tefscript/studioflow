@@ -125,6 +125,9 @@ export interface Settings {
   pref_show_values: number;
   pref_block_lunch: number;
   pref_allow_sunday: number;
+  evolution_url?: string | null;
+  evolution_key?: string | null;
+  evolution_instance?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,4 +227,16 @@ export const settingsApi = {
 
 export const profileApi = {
   update: (data: Partial<User> & { password?: string }) => req<User>("PUT", "/profile", data),
+};
+
+// ---------------------------------------------------------------------------
+// WhatsApp API
+// ---------------------------------------------------------------------------
+
+export const whatsappApi = {
+  createInstance: (data: { instance_name: string; evolution_url: string; evolution_key: string }) =>
+    req<unknown>("POST", "/whatsapp/instance", data),
+  getQrCode: () => req<{ base64?: string; code?: string }>("GET", "/whatsapp/qrcode"),
+  getStatus: () => req<{ connected: boolean; configured: boolean; state?: string }>("GET", "/whatsapp/status"),
+  deleteInstance: () => req<{ success: boolean }>("DELETE", "/whatsapp/instance"),
 };

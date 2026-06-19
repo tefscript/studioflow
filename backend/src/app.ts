@@ -8,6 +8,8 @@ import appointmentRoutes from "./routes/appointments";
 import dashboardRoutes from "./routes/dashboard";
 import settingsRoutes from "./routes/settings";
 import profileRoutes from "./routes/profile";
+import whatsappRoutes from "./routes/whatsapp";
+import { startReminderJob } from "./jobs/reminderJob";
 
 const app = express();
 
@@ -21,6 +23,9 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
+
+startReminderJob();
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

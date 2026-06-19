@@ -1,7 +1,7 @@
 import type { Appointment } from "./mock-data";
 import { clients } from "./mock-data";
 
-export function buildConfirmationMessage(apt: Appointment, studioName = "StudioFlow") {
+export function buildConfirmationMessage(apt: Appointment, studioName = "Studio") {
   const dateLabel = new Date(apt.date + "T00:00:00").toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
