@@ -101,15 +101,6 @@ function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-brand-900/50">
-            Novo por aqui?{" "}
-            <button
-              onClick={() => toast.info("Cadastro em breve!")}
-              className="font-semibold text-brand-600 hover:underline"
-            >
-              Criar conta
-            </button>
-          </p>
         </div>
       </div>
 
