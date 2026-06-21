@@ -1,7 +1,7 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { authApi } from "@/lib/api";
+import { authApi, clearToken } from "@/lib/api";
 import {
   LayoutDashboard,
   Calendar,
@@ -15,6 +15,7 @@ import {
   Bell,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,10 +94,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </button>
-            <button className="relative rounded-xl border border-border bg-card p-2.5 transition-colors hover:bg-brand-100">
-              <Bell className="size-4" />
-              <span className="absolute right-2 top-2 size-2 rounded-full bg-brand-500" />
-            </button>
+            <NotificationButton />
           </div>
         </header>
 
@@ -127,12 +125,52 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function NotificationButton() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="relative rounded-xl border border-border bg-card p-2.5 transition-colors hover:bg-brand-100"
+      >
+        <Bell className="size-4" />
+        <span className="absolute right-2 top-2 size-2 rounded-full bg-brand-500" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-12 z-50 w-72 rounded-2xl border border-border bg-card p-5 shadow-lg">
+          <p className="text-sm font-semibold">Notificações</p>
+          <p className="mt-3 text-xs text-brand-900/50">
+            Em breve: você receberá alertas de novos agendamentos, cancelamentos e confirmações diretamente aqui.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SidebarContent() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ["me"], queryFn: authApi.me });
   const initials = user?.studio_name
     ? user.studio_name.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase()
     : "SF";
+
+  function logout() {
+    clearToken();
+    navigate({ to: "/" });
+  }
+
   return (
     <>
       <Link to="/dashboard" className="mb-10 flex items-center gap-3 px-2">
@@ -164,7 +202,7 @@ function SidebarContent() {
         })}
       </nav>
 
-      <div className="mt-auto space-y-6">
+      <div className="mt-auto space-y-3">
         <div className="flex items-center gap-3 px-2">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-200 font-serif text-sm font-semibold text-brand-700 ring-1 ring-black/5">
             {initials}
@@ -174,6 +212,13 @@ function SidebarContent() {
             <p className="truncate text-xs text-brand-900/50">{user?.email ?? ""}</p>
           </div>
         </div>
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-900/60 transition-all hover:bg-rose-50 hover:text-rose-600"
+        >
+          <LogOut className="size-4" />
+          Sair
+        </button>
       </div>
     </>
   );
