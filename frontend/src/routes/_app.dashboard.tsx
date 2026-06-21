@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHeader, PrimaryButton, SecondaryButton } from "@/components/AppShell";
-import { dashboardApi } from "@/lib/api";
+import { dashboardApi, authApi } from "@/lib/api";
 import type { DashboardData } from "@/lib/api";
 import { statusStyles, statusLabels } from "@/lib/mock-data";
 import { appointmentsApi } from "@/lib/api";
 import type { Appointment } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
   TrendingUp,
@@ -22,10 +23,22 @@ export const Route = createFileRoute("/_app/dashboard")({
   component: Dashboard,
 });
 
+function saudacao(nome: string) {
+  const h = new Date().getHours();
+  const primeiro = nome.split(" ")[0];
+  if (h >= 5 && h < 12) return `Bom dia, ${primeiro}`;
+  if (h >= 12 && h < 15) return `Boa tarde, ${primeiro}`;
+  if (h >= 15 && h < 18) return `Uma tarde produtiva, ${primeiro}`;
+  if (h >= 18 && h < 21) return `Boa noite, ${primeiro}`;
+  if (h >= 21 || h < 5) return `Ainda acordada, ${primeiro}?`;
+  return `Olá, ${primeiro}`;
+}
+
 function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [todayApts, setTodayApts] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: user } = useQuery({ queryKey: ["me"], queryFn: authApi.me });
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -86,12 +99,12 @@ function Dashboard() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
-        title="Olá, seja bem-vinda"
+        title={saudacao(user?.name ?? "profissional")}
         subtitle={
           <>
             Hoje você tem{" "}
             <span className="font-semibold text-brand-600">{todayApts.length} agendamentos</span>.
-            Tudo sob controle ✨
+            Tudo sob controle.
           </>
         }
         action={

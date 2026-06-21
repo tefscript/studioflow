@@ -24,7 +24,7 @@ function LoginPage() {
     try {
       const { token, user } = await authApi.login(email, password);
       setToken(token);
-      toast.success(`Bem-vinda de volta, ${user.name.split(" ")[0]} ✨`);
+      toast.success(`Bem-vinda de volta, ${user.name.split(" ")[0]}!`);
       navigate({ to: "/dashboard" });
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao entrar");

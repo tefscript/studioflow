@@ -9,17 +9,17 @@ export function buildConfirmationMessage(apt: Appointment, studioName = "Studio"
   });
   const firstName = apt.clientName.split(" ")[0];
   return [
-    `Oi, ${firstName}! 💕`,
+    `Oi, ${firstName}!`,
     ``,
     `Passando para confirmar seu horário no ${studioName}:`,
     ``,
-    `🗓 ${dateLabel}`,
-    `⏰ ${apt.time} (${apt.duration} min)`,
-    `💅 ${apt.service}`,
+    `Data: ${dateLabel}`,
+    `Horário: ${apt.time} (${apt.duration} min)`,
+    `Serviço: ${apt.service}`,
     ``,
     `Posso confirmar sua presença? Responda com *SIM* para confirmar ou me avise caso precise remarcar.`,
     ``,
-    `Até breve! ✨`,
+    `Até breve!`,
   ].join("\n");
 }
 

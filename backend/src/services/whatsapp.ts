@@ -61,24 +61,24 @@ async function sendMessage(userId: string, phone: string, text: string): Promise
 
 export async function sendWhatsAppConfirmation(payload: ConfirmationPayload): Promise<void> {
   const text =
-    `Olá, ${payload.clientName}! 👋\n\n` +
-    `Seu agendamento foi confirmado! ✅\n\n` +
-    `📋 *Serviço:* ${payload.serviceName}\n` +
-    `📅 *Data:* ${formatDate(payload.date)}\n` +
-    `🕐 *Horário:* ${payload.time}\n\n` +
-    `Qualquer dúvida, é só chamar! 💖`;
+    `Olá, ${payload.clientName}!\n\n` +
+    `Seu agendamento foi confirmado.\n\n` +
+    `*Serviço:* ${payload.serviceName}\n` +
+    `*Data:* ${formatDate(payload.date)}\n` +
+    `*Horário:* ${payload.time}\n\n` +
+    `Qualquer dúvida, é só chamar!`;
 
   await sendMessage(payload.userId, payload.clientPhone, text);
 }
 
 export async function sendWhatsAppReminder(payload: ReminderPayload): Promise<void> {
   const text =
-    `Olá, ${payload.clientName}! ⏰\n\n` +
-    `Lembrando do seu agendamento *hoje*!\n\n` +
-    `📋 *Serviço:* ${payload.serviceName}\n` +
-    `📅 *Data:* ${formatDate(payload.date)}\n` +
-    `🕐 *Horário:* ${payload.time}\n\n` +
-    `Te esperamos! 💖`;
+    `Olá, ${payload.clientName}!\n\n` +
+    `Lembrando do seu agendamento *hoje*.\n\n` +
+    `*Serviço:* ${payload.serviceName}\n` +
+    `*Data:* ${formatDate(payload.date)}\n` +
+    `*Horário:* ${payload.time}\n\n` +
+    `Te esperamos!`;
 
   await sendMessage(payload.userId, payload.clientPhone, text);
 }
