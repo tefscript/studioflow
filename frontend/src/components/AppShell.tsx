@@ -1,5 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { authApi } from "@/lib/api";
 import {
   LayoutDashboard,
   Calendar,
@@ -127,6 +129,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function SidebarContent() {
   const location = useLocation();
+  const { data: user } = useQuery({ queryKey: ["me"], queryFn: authApi.me });
+  const initials = user?.studio_name
+    ? user.studio_name.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase()
+    : "SF";
   return (
     <>
       <Link to="/dashboard" className="mb-10 flex items-center gap-3 px-2">
@@ -161,11 +167,11 @@ function SidebarContent() {
       <div className="mt-auto space-y-6">
         <div className="flex items-center gap-3 px-2">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-200 font-serif text-sm font-semibold text-brand-700 ring-1 ring-black/5">
-            MS
+            {initials}
           </div>
           <div className="min-w-0 overflow-hidden">
-            <p className="truncate text-sm font-semibold">Isabel Rocha</p>
-            <p className="truncate text-xs text-brand-900/50">mariana@studio.com</p>
+            <p className="truncate text-sm font-semibold">{user?.studio_name ?? "StudioFlow"}</p>
+            <p className="truncate text-xs text-brand-900/50">{user?.email ?? ""}</p>
           </div>
         </div>
       </div>
