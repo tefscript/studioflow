@@ -10,6 +10,7 @@ import settingsRoutes from "./routes/settings";
 import profileRoutes from "./routes/profile";
 import whatsappRoutes from "./routes/whatsapp";
 import { startReminderJob } from "./jobs/reminderJob";
+import prisma from "./lib/prisma";
 
 const app = express();
 
@@ -27,8 +28,13 @@ app.use("/api/whatsapp", whatsappRoutes);
 
 startReminderJob();
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+app.get("/api/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", db: "ok", timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    res.status(503).json({ status: "error", db: "unreachable", error: err.message, timestamp: new Date().toISOString() });
+  }
 });
 
 app.use((_req, res) => {
